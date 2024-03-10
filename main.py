@@ -10,7 +10,7 @@ api_key = os.environ['API_KEY']
 
 # Get every event with match data
 for year in range(2002, 2024):
-# for year in range(2002, 2003):
+    start_time = time.time()
     # No matches in 2021
     if (year == 2021):
         continue
@@ -23,7 +23,7 @@ for year in range(2002, 2024):
         data = event_keys_response.json()
         with open(str(year)+'events.json', 'w') as file:
             json.dump(data, file)
-            print(year, 'event keys saved successfully.')
+            # print(year, 'event keys saved successfully.')
     else:
         print('Failed to retrieve', year, 'events. Status code:', event_keys_response.status_code)
         continue
@@ -34,9 +34,8 @@ for year in range(2002, 2024):
     # List to store every alliance for that year
     year_alliances = []
 
-    # for event_key in ['2002wa']:
     for event_key in event_keys:
-        print(event_key)
+        print('Tabulating:', event_key)
         # Get the matches for that event
         match_response = requests.get('https://www.thebluealliance.com/api/v3/event/' + event_key + '/matches/simple', params={'X-TBA-Auth-Key': api_key})
         # Check request is valid
@@ -63,7 +62,17 @@ for year in range(2002, 2024):
             continue
     # Sort the alliances by sum
     sorted_year_alliances = sorted(year_alliances, key=lambda x: x[1], reverse=True)
-    # Print the first 5 elements using list slicing
-    print('Highest 5 alliances in',year, ':', sorted_year_alliances[:5])
-    # Print the last 5 elements using list slicing
-    print('Lowest 5 alliances in', year, ':', sorted_year_alliances[-5:])
+    # Open a text file in write mode
+    file = open('highestResults.txt', 'a')
+    # Write content to the file
+    file.write('|'+str(year)+' | '+str(sorted_year_alliances[:1][0][1])+' | '+str(sorted_year_alliances[:1][0][0])+' | '+str(sorted_year_alliances[:1][0][4])+' | '+str(sorted_year_alliances[:1][0][3])+' | '+str(sorted_year_alliances[:1][0][2])+'|\n')
+    # Close the text file
+    file.close()
+    
+    # Open a text file in write mode
+    file = open('lowestResults.txt', 'a')
+    # Write content to the file
+    file.write('|'+str(year)+' | '+str(sorted_year_alliances[-1:][0][1])+' | '+str(sorted_year_alliances[-1:][0][0])+' | '+str(sorted_year_alliances[-1:][0][4])+' | '+str(sorted_year_alliances[-1:][0][3])+' | '+str(sorted_year_alliances[-1:][0][2])+'|\n')
+    # Close the text file
+    file.close()
+    print(year, 'took ', time.time() - start_time, ' seconds to process.')

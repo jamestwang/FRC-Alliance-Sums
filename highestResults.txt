@@ -1,0 +1,3 @@
+[details='Highest Alliances']
+|Year | Sum | Alliance | Event | Match | Color|
+|-- | -- | -- | -- | -- | --|
