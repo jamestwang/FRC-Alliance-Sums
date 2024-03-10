@@ -9,7 +9,7 @@ load_dotenv()
 api_key = os.environ['API_KEY']
 
 # Get every event with match data
-for year in range(2024, 2025):
+for year in range(2002, 2025):
     start_time = time.time()
     # No matches in 2021
     if (year == 2021):
@@ -51,7 +51,7 @@ for year in range(2024, 2025):
                     # append alliance number sum, color, match number, and event name
                     alliance_stats = [team_numbers, sum(team_numbers), 'red', match['comp_level']+str(match['match_number']), event_key]
                     # add the alliance to the year's alliances
-                    if len(team_numbers) != 0 and not alliance_stats[1] == 0:
+                    if len(team_numbers) != 0 and not alliance_stats[1] <= 6:
                         year_alliances.append(alliance_stats)
                 if 'alliances' in match and 'blue' in match['alliances'] and 'team_keys' in match['alliances']['blue']:
                     # get the numbers from the team keys
@@ -59,7 +59,7 @@ for year in range(2024, 2025):
                     # append alliance number sum, color, match number, and event name
                     alliance_stats = [team_numbers, sum(team_numbers), 'blue', match['comp_level']+str(match['match_number']), event_key]
                     # add the alliance to the year's alliances
-                    if len(team_numbers) != 0 and not alliance_stats[1] == 0:
+                    if len(team_numbers) != 0 and not alliance_stats[1] <= 6:
                         year_alliances.append(alliance_stats)
         else:
             print('Failed to retrieve', event_key, 'events. Status code:', event_keys_response.status_code)
@@ -72,7 +72,6 @@ for year in range(2024, 2025):
     file.write('|'+str(year)+' | '+str(sorted_year_alliances[:1][0][1])+' | '+str(sorted_year_alliances[:1][0][0])+' | '+str(sorted_year_alliances[:1][0][4])+' | '+str(sorted_year_alliances[:1][0][3])+' | '+str(sorted_year_alliances[:1][0][2])+'|\n')
     # Close the text file
     file.close()
-    
     # Open a text file in write mode
     file = open('lowestResults.txt', 'a')
     # Write content to the file
