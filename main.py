@@ -8,6 +8,14 @@ load_dotenv()
 # Access API key
 api_key = os.environ['API_KEY']
 
+# Set up the output files with the correct headers
+highestResults = open('highestResults.txt', 'w')
+highestResults.write('|Year | Sum | Alliance | Event | Match | Color|\n|--- | --- | --- | --- | --- | ---|\n')
+highestResults.close()
+lowestResults = open('lowestResults.txt', 'w')
+lowestResults.write('|Year | Sum | Alliance | Event | Match | Color|\n|--- | --- | --- | --- | --- | ---|\n')
+lowestResults.close()
+
 # Get every event with match data
 for year in range(2002, 2025):
     start_time = time.time()
@@ -25,7 +33,7 @@ for year in range(2002, 2025):
         for event in data:
             if (event['event_type'] < 99): # I genuinely have no idea what 'event_type' actually is, but alas this seems to work.
                 official_events.append(event['key'])
-                print(event['key']+str(event['event_type']), 'event keys saved successfully.')
+                # print(event['key']+str(event['event_type']), 'event keys saved successfully.')
     else:
         print('Failed to retrieve', year, 'events. Status code:', event_keys_response.status_code)
         continue
@@ -48,34 +56,36 @@ for year in range(2002, 2025):
                 if 'alliances' in match and 'red' in match['alliances'] and 'team_keys' in match['alliances']['red']:
                     # get the numbers from the team keys
                     team_numbers = [int(''.join(filter(str.isdigit, team_key))) for team_key in match['alliances']['red']['team_keys'] if int(''.join(filter(str.isdigit, team_key))) < 9980]
+                    # if alliance is invalid, skip to the next alliance
+                    if len(team_numbers) == 0 or len(team_numbers) != 3:
+                        continue
                     # append alliance number sum, color, match number, and event name
                     alliance_stats = [team_numbers, sum(team_numbers), 'red', match['comp_level']+str(match['match_number']), event_key]
                     # add the alliance to the year's alliances
-                    if len(team_numbers) != 0 and not alliance_stats[1] <= 6:
-                        year_alliances.append(alliance_stats)
+                    year_alliances.append(alliance_stats)
                 if 'alliances' in match and 'blue' in match['alliances'] and 'team_keys' in match['alliances']['blue']:
                     # get the numbers from the team keys
                     team_numbers = [int(''.join(filter(str.isdigit, team_key))) for team_key in match['alliances']['blue']['team_keys'] if int(''.join(filter(str.isdigit, team_key))) <= 9980]
+                    # if alliance is invalid, skip to the next alliance
+                    if len(team_numbers) == 0 or len(team_numbers) != 3:
+                        continue                   
                     # append alliance number sum, color, match number, and event name
                     alliance_stats = [team_numbers, sum(team_numbers), 'blue', match['comp_level']+str(match['match_number']), event_key]
                     # add the alliance to the year's alliances
-                    if len(team_numbers) != 0 and not alliance_stats[1] <= 6:
-                        year_alliances.append(alliance_stats)
+                    year_alliances.append(alliance_stats)
         else:
             print('Failed to retrieve', event_key, 'events. Status code:', event_keys_response.status_code)
             continue
     # Sort the alliances by sum
     sorted_year_alliances = sorted(year_alliances, key=lambda x: x[1], reverse=True)
-    # Open a text file in write mode
-    file = open('highestResults.txt', 'a')
-    # Write content to the file
-    file.write('|'+str(year)+' | '+str(sorted_year_alliances[:1][0][1])+' | '+str(sorted_year_alliances[:1][0][0])+' | '+str(sorted_year_alliances[:1][0][4])+' | '+str(sorted_year_alliances[:1][0][3])+' | '+str(sorted_year_alliances[:1][0][2])+'|\n')
-    # Close the text file
-    file.close()
-    # Open a text file in write mode
-    file = open('lowestResults.txt', 'a')
-    # Write content to the file
-    file.write('|'+str(year)+' | '+str(sorted_year_alliances[-1:][0][1])+' | '+str(sorted_year_alliances[-1:][0][0])+' | '+str(sorted_year_alliances[-1:][0][4])+' | '+str(sorted_year_alliances[-1:][0][3])+' | '+str(sorted_year_alliances[-1:][0][2])+'|\n')
-    # Close the text file
-    file.close()
+    # Open the results files
+    highestResults = open('highestResults.txt', 'a')
+    lowestResults = open('lowestResults.txt', 'a')
+    if year != 2003:
+        # Write content to the files
+        highestResults.write('|'+str(year)+' | '+str(sorted_year_alliances[:1][0][1])+' | '+str(sorted_year_alliances[:1][0][0])+' | '+str(sorted_year_alliances[:1][0][4])+' | '+str(sorted_year_alliances[:1][0][3])+' | '+str(sorted_year_alliances[:1][0][2])+'|\n')
+        lowestResults.write('|'+str(year)+' | '+str(sorted_year_alliances[-1:][0][1])+' | '+str(sorted_year_alliances[-1:][0][0])+' | '+str(sorted_year_alliances[-1:][0][4])+' | '+str(sorted_year_alliances[-1:][0][3])+' | '+str(sorted_year_alliances[-1:][0][2])+'|\n')
+    # Close the text files
+    highestResults.close()
+    lowestResults.close()
     print(year, 'took ', time.time() - start_time, ' seconds to process.') # Message of shame
